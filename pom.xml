@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.laktyushin</groupId>
+    <artifactId>custom-jre</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <module.name>com.laktyushin.jlinkModule.HelloWorld</module.name>
+    </properties>
+
+    <build>
+        <plugins>
+            <!-- 1. Compile the code and create the modular JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                </configuration>
+            </plugin>
+
+            <!-- 2. Copy non-project dependencies into the modules folder -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 3. Execute jlink to bundle the JRE -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <id>create-custom-jre</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${java.home}/bin/jlink</executable>
+                            <arguments>
+                                <!-- Creating Custom JRE with Launcher Scripts -->
+                                <argument>--launcher</argument>
+                                <argument>customjrelauncher=${module.name}/${module.name}
+                                </argument>
+
+                                <!-- Path to JDK modules and your own built modules -->
+                                <argument>--module-path</argument>
+                                <argument>${java.home}/jmods${path.separator}${project.build.directory}/modules
+                                </argument>
+
+                                <!-- Main module name to bundle -->
+                                <argument>--add-modules</argument>
+                                <argument>${module.name}</argument>
+
+                                <!-- Strip down size by removing debugging info and compressing -->
+                                <argument>--strip-debug</argument>
+                                <argument>--compress</argument>
+                                <argument>2</argument>
+                                <argument>--no-header-files</argument>
+                                <argument>--no-man-pages</argument>
+
+                                <!-- Target output folder for your custom JRE -->
+                                <argument>--output</argument>
+                                <argument>${project.build.directory}/custom-jre</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
