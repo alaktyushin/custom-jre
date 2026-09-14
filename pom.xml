@@ -61,7 +61,7 @@
                         <configuration>
                             <executable>${java.home}/bin/jlink</executable>
                             <arguments>
-                                <!-- Creating Custom JRE with Launcher Scripts -->
+                                <!-- Optional Feature: Creating Custom JRE with Launcher Scripts -->
                                 <argument>--launcher</argument>
                                 <argument>customjrelauncher=${module.name}/${module.name}
                                 </argument>
